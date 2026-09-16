@@ -51,6 +51,15 @@ välj det du är mest bekväm med.
 * **Fix:** I changed the offset to `(page - 1) * pageSize`.
 * **Test:** Both existing pagination tests now pass. I also confirmed in Postman that page 2 with a page size of 3 returns IDs `[4, 5, 6]`.
 
+
+### 6. Incorrect availability filtering
+
+* **Where:** `src/routes/consultants.js`, in `GET /api/consultants`.
+* **Symptom:** Requesting `available=false` returned available consultants instead of unavailable ones.
+* **Root cause:** Query parameters arrive as strings. `Boolean("false")` evaluates to `true` because the string is not empty.
+* **Fix:** I replaced `Boolean()` with `String(req.query.available).toLowerCase() === 'true'`. This correctly handles `true` and `false` and also accepts uppercase variations.
+* **Test:** The existing test for `available=false` now passes. I also confirmed in Postman that `available=true` returns only consultants whose `available` field is `true`.
+
 ## Things I chose not to do
 
 ## Questions / assumptions

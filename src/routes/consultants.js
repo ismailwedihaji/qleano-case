@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
   }
 
   if (req.query.available !== undefined) {
-    const wanted = Boolean(req.query.available);
+    const wanted = String(req.query.available).toLowerCase() === 'true';
     result = result.filter((consultant) => consultant.available === wanted);
   }
 
