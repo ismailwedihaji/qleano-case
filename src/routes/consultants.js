@@ -74,10 +74,10 @@ router.post('/', async (req, res) => {
   if (!Array.isArray(skills)) {
     throw new ValidationError('skills must be an array');
   }
-  if (!hourlyRate) {
+  if (!Number.isFinite(hourlyRate) || hourlyRate < 0) {
     throw new ValidationError('hourlyRate is required and must be a number >= 0');
   }
-  if (!yearsOfExperience) {
+  if (!Number.isFinite(yearsOfExperience) || yearsOfExperience < 0) {
     throw new ValidationError('yearsOfExperience is required and must be a number >= 0');
   }
 

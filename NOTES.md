@@ -33,6 +33,15 @@ välj det du är mest bekväm med.
 * **Fix:** I moved `app.use(errorHandler)` after the routes and the not-found handler.
 * **Test:** The existing test for a missing name failed before the change and passes now. It checks that the response has status `400` and contains an `error` field.
 
+
+### 4. Incorrect validation of hourly rate and experience
+
+* **Where:** `src/routes/consultants.js`, in `POST /api/consultants`.
+* **Symptom:** The API rejected `0` for hourly rate and years of experience, even though the README allows it. The checks also allowed negative numbers and non-empty strings.
+* **Root cause:** The checks used `!hourlyRate` and `!yearsOfExperience`. These treat `0` as missing without properly checking the value's type or range.
+* **Fix:** I replaced both checks with `Number.isFinite()` and a check for values below zero. Both fields now accept numbers greater than or equal to zero.
+* **Test:** The existing test for zero rate and zero experience now passes. In Postman, both fields set to `0` returned `201`, and `yearsOfExperience: -1` returned `400` with a JSON error. Automated tests for negative and non-numeric values remain to be added.
+
 ## Things I chose not to do
 
 ## Questions / assumptions
