@@ -24,6 +24,15 @@ välj det du är mest bekväm med.
 * **Fix:** I added `await` so the route waits for the lookup result before checking and returning the consultant.
 * **Test:** The existing test for fetching a consultant by ID now passes. I also checked in Postman that requesting `/api/consultants/2` returns Bassam Haddad's details.
 
+
+### 3. Errors returned as HTML instead of JSON
+
+* **Where:** `src/app.js`, where `errorHandler` is registered.
+* **Symptom:** Creating a consultant without a name returned `400` with an HTML error page and a stack trace instead of JSON.
+* **Root cause:** The error handler was registered before the routes. Express looks forward for error handlers, so errors from these routes never reached it.
+* **Fix:** I moved `app.use(errorHandler)` after the routes and the not-found handler.
+* **Test:** The existing test for a missing name failed before the change and passes now. It checks that the response has status `400` and contains an `error` field.
+
 ## Things I chose not to do
 
 ## Questions / assumptions

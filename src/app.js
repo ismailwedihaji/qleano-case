@@ -18,12 +18,12 @@ function createApp() {
     res.json({ status: 'ok' });
   });
 
-  app.use(errorHandler);
 
   app.use('/api/consultants', consultantsRouter);
   app.use('/api/assignments', assignmentsRouter);
 
   app.use(notFoundHandler);
+  app.use(errorHandler);
 
   return app;
 }
