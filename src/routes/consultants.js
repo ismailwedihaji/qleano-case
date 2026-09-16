@@ -52,7 +52,7 @@ router.get('/', async (req, res) => {
 
 // GET /api/consultants/:id
 router.get('/:id', async (req, res) => {
-  const consultant = store.findConsultant(req.params.id);
+  const consultant = await store.findConsultant(req.params.id);
 
   if (!consultant) {
     throw new NotFoundError(`No consultant with id ${req.params.id}`);

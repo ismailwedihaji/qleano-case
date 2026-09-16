@@ -15,6 +15,15 @@ välj det du är mest bekväm med.
 * **Fix:** I changed the status to `201`. The consultant creation logic stayed the same.
 * **Test:** The existing creation test now passes. I also checked in Postman that a valid request returns `201` and the new consultant's details.
 
+
+### 2. Missing consultant details when fetching by ID
+
+* **Where:** `src/routes/consultants.js`, in `GET /api/consultants/:id`.
+* **Symptom:** The API returned `200 OK` with an empty object `{}` instead of the consultant's details.
+* **Root cause:** `findConsultant()` returns a Promise, but the route tried to send it as JSON without awaiting the result.
+* **Fix:** I added `await` so the route waits for the lookup result before checking and returning the consultant.
+* **Test:** The existing test for fetching a consultant by ID now passes. I also checked in Postman that requesting `/api/consultants/2` returns Bassam Haddad's details.
+
 ## Things I chose not to do
 
 ## Questions / assumptions
