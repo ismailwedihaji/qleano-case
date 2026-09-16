@@ -39,7 +39,7 @@ router.get('/', async (req, res) => {
     result.sort((a, b) => a.hourlyRate - b.hourlyRate);
   }
 
-  const offset = page * pageSize;
+  const offset = (page - 1) * pageSize;
   const items = result.slice(offset, offset + pageSize);
 
   res.json({

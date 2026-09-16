@@ -42,6 +42,15 @@ välj det du är mest bekväm med.
 * **Fix:** I replaced both checks with `Number.isFinite()` and a check for values below zero. Both fields now accept numbers greater than or equal to zero.
 * **Test:** The existing test for zero rate and zero experience now passes. In Postman, both fields set to `0` returned `201`, and `yearsOfExperience: -1` returned `400` with a JSON error. Automated tests for negative and non-numeric values remain to be added.
 
+
+### 5. Incorrect pagination offset
+
+* **Where:** `src/routes/consultants.js`, in `GET /api/consultants`.
+* **Symptom:** With a page size of 3, page 1 returned IDs `[4, 5, 6]` instead of `[1, 2, 3]`. Page 2 returned `[7, 8, 9]` instead of `[4, 5, 6]`.
+* **Root cause:** The offset used `page * pageSize`, which skipped the first page even though page numbers start at 1.
+* **Fix:** I changed the offset to `(page - 1) * pageSize`.
+* **Test:** Both existing pagination tests now pass. I also confirmed in Postman that page 2 with a page size of 3 returns IDs `[4, 5, 6]`.
+
 ## Things I chose not to do
 
 ## Questions / assumptions
