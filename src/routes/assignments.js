@@ -44,7 +44,7 @@ router.post('/', async (req, res) => {
     .find((assignment) => {
       const bookedStart = new Date(assignment.startDate);
       const bookedEnd = new Date(assignment.endDate);
-      return bookedStart > start && bookedEnd < end;
+      return start <= bookedEnd && end >= bookedStart;
     });
 
   if (clash) {

@@ -60,6 +60,15 @@ välj det du är mest bekväm med.
 * **Fix:** I replaced `Boolean()` with `String(req.query.available).toLowerCase() === 'true'`. This correctly handles `true` and `false` and also accepts uppercase variations.
 * **Test:** The existing test for `available=false` now passes. I also confirmed in Postman that `available=true` returns only consultants whose `available` field is `true`.
 
+
+### 7. Overlapping assignments were accepted
+
+* **Where:** `src/routes/assignments.js`, in `POST /api/assignments`.
+* **Symptom:** The API accepted overlapping assignments for the same consultant and returned `201 Created` instead of `409 Conflict`.
+* **Root cause:** The date check only detected conflicts when the existing booking was strictly inside the new booking. It missed other types of overlap.
+* **Fix:** I changed the check to `start <= bookedEnd && end >= bookedStart`. It now detects overlapping periods, including bookings that share a boundary date.
+* **Test:** All 6 tests in `tests/assignments.test.js` now pass, including both overlap tests and the test for a booking without a conflict. I also confirmed in Postman that booking consultant 1 from April 1 to May 1 returns `409` with a JSON error.
+
 ## Things I chose not to do
 
 ## Questions / assumptions
