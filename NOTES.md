@@ -69,6 +69,15 @@ välj det du är mest bekväm med.
 * **Fix:** I changed the check to `start <= bookedEnd && end >= bookedStart`. It now detects overlapping periods, including bookings that share a boundary date.
 * **Test:** All 6 tests in `tests/assignments.test.js` now pass, including both overlap tests and the test for a booking without a conflict. I also confirmed in Postman that booking consultant 1 from April 1 to May 1 returns `409` with a JSON error.
 
+
+### 8. Consultant IDs were reused after deletion
+
+* **Where:** `src/data/store.js`, in `createConsultant()`.
+* **Symptom:** After creating a consultant and deleting another, the next consultant could receive an ID that was already in use.
+* **Root cause:** IDs were generated using `consultants.length + 1`. Deleting a consultant reduced the count, allowing the same ID to be generated again.
+* **Fix:** I added a separate `nextConsultantId` counter, starting after the highest seed ID. It increases with each new consultant and is not reduced by deletions. I also reset it in `__reset()` alongside the test data.
+* **Test:** The existing ID test creates a consultant, deletes consultant 5, and creates another consultant. It checks that the two newly created consultants have different IDs.
+
 ## Things I chose not to do
 
 ## Questions / assumptions

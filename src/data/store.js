@@ -27,6 +27,8 @@ const SEED_ASSIGNMENTS = [
 let consultants = clone(SEED_CONSULTANTS);
 let assignments = clone(SEED_ASSIGNMENTS);
 
+let nextConsultantId = Math.max(0, ...SEED_CONSULTANTS.map(c => c.id)) + 1;
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -56,7 +58,7 @@ async function findConsultant(rawId) {
 
 async function createConsultant(data) {
   await delay();
-  const consultant = { id: consultants.length + 1, ...data };
+  const consultant = { ...data, id: nextConsultantId++ };
   consultants.push(consultant);
   return consultant;
 }
@@ -88,6 +90,7 @@ async function createAssignment(data) {
 function __reset() {
   consultants = clone(SEED_CONSULTANTS);
   assignments = clone(SEED_ASSIGNMENTS);
+  nextConsultantId = Math.max(0, ...SEED_CONSULTANTS.map(c => c.id)) + 1;
 }
 
 module.exports = {
