@@ -90,7 +90,7 @@ router.post('/', async (req, res) => {
     available: available ?? true,
   });
 
-  res.status(200).json(created);
+  res.status(201).json(created);
 });
 
 // PATCH /api/consultants/:id
