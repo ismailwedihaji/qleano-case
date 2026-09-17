@@ -114,6 +114,15 @@ välj det du är mest bekväm med.
 * **Fix:** I added a string type check and a basic email format check, requiring text around a single `@`, a dot in the domain part, and no whitespace.
 * **Test:** I reproduced the issue in Postman before the fix and added a test that expects `400` for `"@"`. It failed before the fix and passes now. The existing creation tests with valid email addresses still pass.
 
+
+### 13. Invalid assignment dates were accepted
+
+* **Where:** `src/routes/assignments.js`, in `POST /api/assignments`.
+* **Symptom:** An assignment with an invalid date such as `"not-a-date"` was accepted and returned `201 Created` instead of `400 Bad Request`.
+* **Root cause:** The route created `Date` objects but never checked whether the parsed dates were valid.
+* **Fix:** I added validation using `Number.isNaN(date.getTime())` and reject the request with a `ValidationError` when either date cannot be parsed.
+* **Test:** I reproduced the issue in Postman and added an automated regression test. The test failed with `201` before the fix and passes with `400` after the fix.
+
 ## Things I chose not to do
 
 ## Questions / assumptions

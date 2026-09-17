@@ -38,6 +38,10 @@ router.post('/', async (req, res) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+  throw new ValidationError('startDate and endDate must be valid dates');
+  }
+  
   const existing = await store.getAssignments();
   const clash = existing
     .filter((assignment) => assignment.consultantId === consultant.id)

@@ -82,3 +82,18 @@ test('POST /api/assignments returns 400 when title is missing', async () => {
     .send({ consultantId: 2, startDate: '2026-09-01', endDate: '2026-10-01' })
     .expect(400);
 });
+
+// An unparsable date must be rejected.
+test('POST /api/assignments returns 400 for an invalid date', async () => {
+  const res = await request(app)
+    .post('/api/assignments')
+    .send({
+      consultantId: 2,
+      title: 'Invalid date test',
+      startDate: 'not-a-date',
+      endDate: '2026-10-01',
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
