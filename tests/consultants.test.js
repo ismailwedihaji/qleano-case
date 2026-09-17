@@ -186,3 +186,26 @@ test('GET /api/consultants returns filtered total before pagination', async () =
   assert.equal(res.body.items.length, 2);
   assert.equal(res.body.total, 3);
 });
+
+
+
+// Sorting by rate must not change the order of later requests.
+test('GET /api/consultants rate sorting does not affect later requests', async () => {
+  const sorted = await request(app)
+    .get('/api/consultants?sort=rate&page=1&pageSize=3')
+    .expect(200);
+
+  assert.deepEqual(
+    sorted.body.items.map((c) => c.id),
+    [9, 5, 7]
+  );
+
+  const subsequent = await request(app)
+    .get('/api/consultants?page=1&pageSize=3')
+    .expect(200);
+
+  assert.deepEqual(
+    subsequent.body.items.map((c) => c.id),
+    [1, 2, 3]
+  );
+});

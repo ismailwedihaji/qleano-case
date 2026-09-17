@@ -87,6 +87,16 @@ välj det du är mest bekväm med.
 * **Fix:** I changed it to `result.length`, which counts all matching consultants after filtering and before pagination.
 * **Test:** I added two tests covering totals with and without an availability filter. Both failed before the fix and pass now.
 
+
+### 10. Sorting affected later requests
+
+* **Where:** `src/routes/consultants.js`, in `GET /api/consultants`.
+* **Symptom:** After requesting `sort=rate`, a request without sorting still returned consultants in rate order instead of ID order.
+* **Root cause:** `result` referenced the shared array from the store. Calling `.sort()` changed that array's order.
+* **Fix:** I changed `let result = all` to `let result = [...all]` so sorting works on a separate array.
+* **Test:** I added a test that requests consultants sorted by rate, then checks that a request without sorting returns IDs `[1, 2, 3]`. It failed before the fix and passes now.
+
+
 ## Things I chose not to do
 
 ## Questions / assumptions

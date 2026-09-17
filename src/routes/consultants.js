@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
   req.log.debug('Listing consultants', { page, pageSize, filters: req.query });
 
   const all = await store.getConsultants();
-  let result = all;
+  let result = [...all];
 
   if (req.query.skill !== undefined) {
     const skill = String(req.query.skill).toLowerCase();
