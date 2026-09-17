@@ -165,3 +165,24 @@ test('ids are never reused after a consultant has been deleted', async () => {
     'two different consultants must never share an id'
   );
 });
+
+
+// The seed data has 10 consultants; this page shows 3 of them.
+test('GET /api/consultants returns total before pagination', async () => {
+  const res = await request(app)
+    .get('/api/consultants?page=1&pageSize=3')
+    .expect(200);
+
+  assert.equal(res.body.items.length, 3);
+  assert.equal(res.body.total, 10);
+});
+
+// The seed data has 3 unavailable consultants; this page shows 2 of them.
+test('GET /api/consultants returns filtered total before pagination', async () => {
+  const res = await request(app)
+    .get('/api/consultants?available=false&page=1&pageSize=2')
+    .expect(200);
+
+  assert.equal(res.body.items.length, 2);
+  assert.equal(res.body.total, 3);
+});

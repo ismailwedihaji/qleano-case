@@ -46,7 +46,7 @@ router.get('/', async (req, res) => {
     items,
     page,
     pageSize,
-    total: items.length,
+    total: result.length,
   });
 });
 

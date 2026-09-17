@@ -78,6 +78,15 @@ välj det du är mest bekväm med.
 * **Fix:** I added a separate `nextConsultantId` counter, starting after the highest seed ID. It increases with each new consultant and is not reduced by deletions. I also reset it in `__reset()` alongside the test data.
 * **Test:** The existing ID test creates a consultant, deletes consultant 5, and creates another consultant. It checks that the two newly created consultants have different IDs.
 
+
+### 9. Incorrect total in paginated consultant results
+
+* **Where:** `src/routes/consultants.js`, in `GET /api/consultants`.
+* **Symptom:** Requesting three consultants per page returned `total: 3`, even though there were ten consultants in total.
+* **Root cause:** The response used `items.length`, which only counts consultants on the current page.
+* **Fix:** I changed it to `result.length`, which counts all matching consultants after filtering and before pagination.
+* **Test:** I added two tests covering totals with and without an availability filter. Both failed before the fix and pass now.
+
 ## Things I chose not to do
 
 ## Questions / assumptions
