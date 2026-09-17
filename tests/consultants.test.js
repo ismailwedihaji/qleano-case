@@ -209,3 +209,44 @@ test('GET /api/consultants rate sorting does not affect later requests', async (
     [1, 2, 3]
   );
 });
+
+
+// Changing an ID must be rejected without modifying the consultant.
+test('PATCH /api/consultants/:id rejects id changes', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ id: 999 })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});
+
+// An unknown field must cause the whole update to be rejected.
+test('PATCH /api/consultants/:id rejects unknown fields', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ hourlyRate: 999, nickname: 'Test' })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});

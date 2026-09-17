@@ -101,7 +101,24 @@ router.patch('/:id', async (req, res) => {
     throw new NotFoundError(`No consultant with id ${req.params.id}`);
   }
 
-  Object.assign(existing, req.body);
+  const allowedFields = [
+  'name',
+  'email',
+  'skills',
+  'hourlyRate',
+  'yearsOfExperience',
+  'available',
+  ];
+
+  const updates = req.body ?? {};
+
+  for (const field of Object.keys(updates)) {
+    if (!allowedFields.includes(field)) {
+      throw new ValidationError(`Field '${field}' cannot be updated`);
+    }
+  }
+
+  Object.assign(existing, updates);
 
   res.json(existing);
 });

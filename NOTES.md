@@ -97,6 +97,14 @@ välj det du är mest bekväm med.
 * **Test:** I added a test that requests consultants sorted by rate, then checks that a request without sorting returns IDs `[1, 2, 3]`. It failed before the fix and passes now.
 
 
+### 11. PATCH allowed ID changes and unknown fields
+
+* **Where:** `src/routes/consultants.js`, in `PATCH /api/consultants/:id`.
+* **Symptom:** The API accepted changes to `id` and added unknown fields such as `nickname`, returning `200` instead of `400`.
+* **Root cause:** `Object.assign(existing, req.body)` copied all incoming fields without checking whether they were allowed.
+* **Fix:** I added a list of allowed fields and check every incoming field before updating the consultant. If any field is not allowed, the whole request is rejected with `400`.
+* **Test:** I reproduced both cases in Postman before the fix. I added two tests for ID changes and unknown fields. Both failed before the fix and pass now. They also check that rejected requests leave the consultant unchanged.
+
 ## Things I chose not to do
 
 ## Questions / assumptions
