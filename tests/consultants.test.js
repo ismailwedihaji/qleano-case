@@ -268,3 +268,36 @@ test('POST /api/consultants rejects an invalid email address', async () => {
 
   assert.ok(res.body.error);
 });
+
+
+// Negative hourly rates must be rejected.
+test('POST /api/consultants rejects a negative hourly rate', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Negative Rate',
+      email: 'negative@example.com',
+      skills: ['Node.js'],
+      hourlyRate: -1,
+      yearsOfExperience: 3,
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
+
+// Experience must be a number.
+test('POST /api/consultants rejects non-numeric years of experience', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Invalid Experience',
+      email: 'experience@example.com',
+      skills: ['Node.js'],
+      hourlyRate: 900,
+      yearsOfExperience: 'three',
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});

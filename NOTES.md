@@ -40,7 +40,7 @@ välj det du är mest bekväm med.
 * **Symptom:** The API rejected `0` for hourly rate and years of experience, even though the README allows it. The checks also allowed negative numbers and non-empty strings.
 * **Root cause:** The checks used `!hourlyRate` and `!yearsOfExperience`. These treat `0` as missing without properly checking the value's type or range.
 * **Fix:** I replaced both checks with `Number.isFinite()` and a check for values below zero. Both fields now accept numbers greater than or equal to zero.
-* **Test:** The existing test for zero rate and zero experience now passes. In Postman, both fields set to `0` returned `201`, and `yearsOfExperience: -1` returned `400` with a JSON error. Automated tests for negative and non-numeric values remain to be added.
+* **Test:** The existing test for zero rate and zero experience now passes. I also verified in Postman that a negative hourly rate returns `400 Bad Request`, and added regression tests for a negative hourly rate and non-numeric years of experience. Both automated tests pass and confirm that invalid numeric values are rejected as required.
 
 
 ### 5. Incorrect pagination offset
