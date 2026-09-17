@@ -68,7 +68,9 @@ router.post('/', async (req, res) => {
   if (!name) {
     throw new ValidationError('name is required');
   }
-  if (!email || !String(email).includes('@')) {
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (typeof email !== 'string' || !emailPattern.test(email)) {
     throw new ValidationError('email must be a valid email address');
   }
   if (!Array.isArray(skills)) {

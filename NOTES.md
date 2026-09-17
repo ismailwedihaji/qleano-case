@@ -105,6 +105,15 @@ välj det du är mest bekväm med.
 * **Fix:** I added a list of allowed fields and check every incoming field before updating the consultant. If any field is not allowed, the whole request is rejected with `400`.
 * **Test:** I reproduced both cases in Postman before the fix. I added two tests for ID changes and unknown fields. Both failed before the fix and pass now. They also check that rejected requests leave the consultant unchanged.
 
+
+### 12. Invalid email addresses were accepted
+
+* **Where:** `src/routes/consultants.js`, in `POST /api/consultants`.
+* **Symptom:** Creating a consultant with `"@"` as the email address returned `201` instead of `400`.
+* **Root cause:** The validation only checked whether the value contained `@`.
+* **Fix:** I added a string type check and a basic email format check, requiring text around a single `@`, a dot in the domain part, and no whitespace.
+* **Test:** I reproduced the issue in Postman before the fix and added a test that expects `400` for `"@"`. It failed before the fix and passes now. The existing creation tests with valid email addresses still pass.
+
 ## Things I chose not to do
 
 ## Questions / assumptions

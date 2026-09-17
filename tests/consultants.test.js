@@ -250,3 +250,21 @@ test('PATCH /api/consultants/:id rejects unknown fields', async () => {
 
   assert.deepEqual(after.body, before.body);
 });
+
+
+// An @ sign alone is not a valid email address.
+test('POST /api/consultants rejects an invalid email address', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Email Test',
+      email: '@',
+      skills: ['Node.js'],
+      hourlyRate: 900,
+      yearsOfExperience: 3,
+      available: true,
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
