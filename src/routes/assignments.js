@@ -41,7 +41,11 @@ router.post('/', async (req, res) => {
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
   throw new ValidationError('startDate and endDate must be valid dates');
   }
-  
+
+  if (end <= start) {
+  throw new ValidationError('endDate must be after startDate'); 
+  }
+
   const existing = await store.getAssignments();
   const clash = existing
     .filter((assignment) => assignment.consultantId === consultant.id)

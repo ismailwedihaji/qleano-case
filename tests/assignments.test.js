@@ -97,3 +97,18 @@ test('POST /api/assignments returns 400 for an invalid date', async () => {
 
   assert.ok(res.body.error);
 });
+
+// endDate must be strictly after startDate.
+test('POST /api/assignments returns 400 when endDate is not after startDate', async () => {
+  const res = await request(app)
+    .post('/api/assignments')
+    .send({
+      consultantId: 2,
+      title: 'Invalid date range',
+      startDate: '2026-10-20',
+      endDate: '2026-10-01',
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});

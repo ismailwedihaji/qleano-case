@@ -123,6 +123,15 @@ välj det du är mest bekväm med.
 * **Fix:** I added validation using `Number.isNaN(date.getTime())` and reject the request with a `ValidationError` when either date cannot be parsed.
 * **Test:** I reproduced the issue in Postman and added an automated regression test. The test failed with `201` before the fix and passes with `400` after the fix.
 
+
+### 14. Assignment end date could be before the start date
+
+* **Where:** `src/routes/assignments.js`, in `POST /api/assignments`.
+* **Symptom:** An assignment with an `endDate` before the `startDate` was accepted and returned `201 Created` instead of `400 Bad Request`.
+* **Root cause:** The route parsed both dates but never checked their chronological order.
+* **Fix:** I added validation that rejects the request when `endDate` is less than or equal to `startDate`.
+* **Test:** I reproduced the issue in Postman and added a regression test. The test failed with `201` before the fix and passes with `400` after the fix.
+
 ## Things I chose not to do
 
 ## Questions / assumptions
