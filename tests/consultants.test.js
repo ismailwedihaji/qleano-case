@@ -301,3 +301,84 @@ test('POST /api/consultants rejects non-numeric years of experience', async () =
 
   assert.ok(res.body.error);
 });
+
+
+// PATCH must reject a negative hourly rate without modifying the consultant.
+test('PATCH /api/consultants/:id rejects a negative hourly rate', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ hourlyRate: -1 })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});
+
+// PATCH must reject non-numeric years of experience.
+test('PATCH /api/consultants/:id rejects non-numeric years of experience', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ yearsOfExperience: 'five' })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});
+
+// PATCH must keep skills as an array.
+test('PATCH /api/consultants/:id rejects non-array skills', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ skills: 'Node.js' })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});
+
+// PATCH must reject an invalid email address.
+test('PATCH /api/consultants/:id rejects an invalid email address', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ email: '@' })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});

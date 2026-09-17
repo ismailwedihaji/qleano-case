@@ -8,6 +8,8 @@ const router = express.Router();
 
 const DEFAULT_PAGE_SIZE = 10;
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // GET /api/consultants
 // Filtering:  ?skill=node.js   ?available=true|false
 // Sorting:    ?sort=rate
@@ -69,7 +71,7 @@ router.post('/', async (req, res) => {
     throw new ValidationError('name is required');
   }
 
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
   if (typeof email !== 'string' || !emailPattern.test(email)) {
     throw new ValidationError('email must be a valid email address');
   }
@@ -104,12 +106,12 @@ router.patch('/:id', async (req, res) => {
   }
 
   const allowedFields = [
-  'name',
-  'email',
-  'skills',
-  'hourlyRate',
-  'yearsOfExperience',
-  'available',
+    'name',
+    'email',
+    'skills',
+    'hourlyRate',
+    'yearsOfExperience',
+    'available',
   ];
 
   const updates = req.body ?? {};
@@ -118,6 +120,26 @@ router.patch('/:id', async (req, res) => {
     if (!allowedFields.includes(field)) {
       throw new ValidationError(`Field '${field}' cannot be updated`);
     }
+  }
+
+  if ('name' in updates && !updates.name) {
+    throw new ValidationError('name is required');
+  }
+
+  if ('email' in updates && (typeof updates.email !== 'string' || !emailPattern.test(updates.email))) {
+    throw new ValidationError('email must be a valid email address');
+  }
+
+  if ('skills' in updates && !Array.isArray(updates.skills)) {
+    throw new ValidationError('skills must be an array');
+  }
+
+  if ('hourlyRate' in updates && (!Number.isFinite(updates.hourlyRate) || updates.hourlyRate < 0)) {
+    throw new ValidationError('hourlyRate must be a number >= 0');
+  }
+
+  if ('yearsOfExperience' in updates && (!Number.isFinite(updates.yearsOfExperience) || updates.yearsOfExperience < 0)) {
+    throw new ValidationError('yearsOfExperience must be a number >= 0');
   }
 
   Object.assign(existing, updates);

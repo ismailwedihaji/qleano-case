@@ -132,6 +132,14 @@ välj det du är mest bekväm med.
 * **Fix:** I added validation that rejects the request when `endDate` is less than or equal to `startDate`.
 * **Test:** I reproduced the issue in Postman and added a regression test. The test failed with `201` before the fix and passes with `400` after the fix.
 
+### 15. PATCH accepted invalid consultant values
+
+* **Where:** `src/routes/consultants.js`, in `PATCH /api/consultants/:id`.
+* **Symptom:** PATCH accepted invalid values such as a negative hourly rate, non-numeric years of experience, non-array skills, and invalid email addresses.
+* **Root cause:** The route only checked whether field names were allowed, but did not validate the values before applying them with `Object.assign()`.
+* **Fix:** I added validation for the fields included in the PATCH request before modifying the consultant. The same value rules used when creating a consultant are now also applied when those fields are updated.
+* **Test:** I added four regression tests covering a negative hourly rate, non-numeric years of experience, non-array skills, and an invalid email address. The tests also verify that rejected updates do not modify the existing consultant. All tests now pass.
+
 ## Things I chose not to do
 
 ## Questions / assumptions
