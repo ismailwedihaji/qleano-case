@@ -140,6 +140,15 @@ välj det du är mest bekväm med.
 * **Fix:** I added validation for the fields included in the PATCH request before modifying the consultant. The same value rules used when creating a consultant are now also applied when those fields are updated.
 * **Test:** I added four regression tests covering a negative hourly rate, non-numeric years of experience, non-array skills, and an invalid email address. The tests also verify that rejected updates do not modify the existing consultant. All tests now pass.
 
+
+### 16. Invalid PATCH consultant IDs were not covered by a test
+
+* **Where:** `tests/consultants.test.js`, for `PATCH /api/consultants/:id`.
+* **Symptom:** The API contract requires an invalid consultant ID such as `abc` to return `400`, but this case was not covered by a PATCH test.
+* **Root cause:** Invalid IDs were already tested for `GET`, but there was no equivalent regression test for `PATCH`.
+* **Fix:** I added a PATCH test for an invalid consultant ID. No production code change was needed because the existing ID validation already handled this case correctly.
+* **Test:** `PATCH /api/consultants/abc` with a valid update body now verifies that the API returns `400` with a JSON error response.
+
 ## Things I chose not to do
 
 ## Questions / assumptions

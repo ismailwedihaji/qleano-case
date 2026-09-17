@@ -382,3 +382,13 @@ test('PATCH /api/consultants/:id rejects an invalid email address', async () => 
 
   assert.deepEqual(after.body, before.body);
 });
+
+test('PATCH /api/consultants/:id returns 400 for an invalid id', async () => {
+  const res = await request(app)
+    .patch('/api/consultants/abc')
+    .send({ hourlyRate: 900 })
+    .expect(400);
+
+  assert.match(res.headers['content-type'], /application\/json/);
+  assert.ok(res.body.error);
+});
