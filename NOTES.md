@@ -67,7 +67,7 @@ välj det du är mest bekväm med.
 * **Symptom:** The API accepted overlapping assignments for the same consultant and returned `201 Created` instead of `409 Conflict`.
 * **Root cause:** The date check only detected conflicts when the existing booking was strictly inside the new booking. It missed other types of overlap.
 * **Fix:** I changed the check to `start <= bookedEnd && end >= bookedStart`. It now detects overlapping periods, including bookings that share a boundary date.
-* **Test:** All 6 tests in `tests/assignments.test.js` now pass, including both overlap tests and the test for a booking without a conflict. I also confirmed in Postman that booking consultant 1 from April 1 to May 1 returns `409` with a JSON error.
+* **Test:** All assignment tests now pass, including overlap cases, non-conflicting bookings, invalid dates, missing required dates, filtering, and bookings for different consultants.
 
 
 ### 8. Consultant IDs were reused after deletion

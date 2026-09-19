@@ -112,3 +112,55 @@ test('POST /api/assignments returns 400 when endDate is not after startDate', as
 
   assert.ok(res.body.error);
 });
+
+// Without a consultantId filter, all assignments should be returned.
+test('GET /api/assignments returns all assignments', async () => {
+  const res = await request(app)
+    .get('/api/assignments')
+    .expect(200);
+
+  assert.equal(res.body.items.length, 2);
+  assert.equal(res.body.total, 2);
+});
+
+
+// A consultant with no assignments should return an empty list.
+test('GET /api/assignments returns an empty list when no assignments match', async () => {
+  const res = await request(app)
+    .get('/api/assignments?consultantId=2')
+    .expect(200);
+
+  assert.equal(res.body.items.length, 0);
+  assert.equal(res.body.total, 0);
+});
+
+// Different consultants may be booked during the same period.
+test('POST /api/assignments allows overlapping dates for another consultant', async () => {
+  const res = await request(app)
+    .post('/api/assignments')
+    .send({
+      consultantId: 2,
+      title: 'Parallel assignment',
+      startDate: '2026-03-01',
+      endDate: '2026-04-01',
+    })
+    .expect(201);
+
+  assert.equal(res.body.consultantId, 2);
+  assert.ok(res.body.id);
+});
+
+
+// Both startDate and endDate are required.
+test('POST /api/assignments returns 400 when endDate is missing', async () => {
+  const res = await request(app)
+    .post('/api/assignments')
+    .send({
+      consultantId: 2,
+      title: 'Missing end date',
+      startDate: '2026-10-01',
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
