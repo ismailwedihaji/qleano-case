@@ -392,3 +392,75 @@ test('PATCH /api/consultants/:id returns 400 for an invalid id', async () => {
   assert.match(res.headers['content-type'], /application\/json/);
   assert.ok(res.body.error);
 });
+
+// available should default to true when omitted.
+test('POST /api/consultants defaults available to true', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Default Available',
+      email: 'default@example.com',
+      skills: ['Node.js'],
+      hourlyRate: 800,
+      yearsOfExperience: 2,
+    })
+    .expect(201);
+
+  assert.equal(res.body.available, true);
+});
+
+// skills must be an array when creating a consultant.
+test('POST /api/consultants rejects non-array skills', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Invalid Skills',
+      email: 'skills@example.com',
+      skills: 'Node.js',
+      hourlyRate: 800,
+      yearsOfExperience: 2,
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
+
+// hourlyRate is required.
+test('POST /api/consultants returns 400 when hourlyRate is missing', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Missing Rate',
+      email: 'rate@example.com',
+      skills: ['Node.js'],
+      yearsOfExperience: 2,
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
+
+// yearsOfExperience is required.
+test('POST /api/consultants returns 400 when yearsOfExperience is missing', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Missing Experience',
+      email: 'experience2@example.com',
+      skills: ['Node.js'],
+      hourlyRate: 800,
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
+
+// PATCH should return 404 when the consultant does not exist.
+test('PATCH /api/consultants/:id returns 404 for an unknown consultant', async () => {
+  const res = await request(app)
+    .patch('/api/consultants/999')
+    .send({ hourlyRate: 900 })
+    .expect(404);
+
+  assert.ok(res.body.error);
+});
