@@ -38,13 +38,21 @@ router.post('/', async (req, res) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+  throw new ValidationError('startDate and endDate must be valid dates');
+  }
+
+  if (end <= start) {
+  throw new ValidationError('endDate must be after startDate'); 
+  }
+
   const existing = await store.getAssignments();
   const clash = existing
     .filter((assignment) => assignment.consultantId === consultant.id)
     .find((assignment) => {
       const bookedStart = new Date(assignment.startDate);
       const bookedEnd = new Date(assignment.endDate);
-      return bookedStart > start && bookedEnd < end;
+      return start <= bookedEnd && end >= bookedStart;
     });
 
   if (clash) {

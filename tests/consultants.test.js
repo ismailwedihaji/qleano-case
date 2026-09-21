@@ -165,3 +165,302 @@ test('ids are never reused after a consultant has been deleted', async () => {
     'two different consultants must never share an id'
   );
 });
+
+
+// The seed data has 10 consultants; this page shows 3 of them.
+test('GET /api/consultants returns total before pagination', async () => {
+  const res = await request(app)
+    .get('/api/consultants?page=1&pageSize=3')
+    .expect(200);
+
+  assert.equal(res.body.items.length, 3);
+  assert.equal(res.body.total, 10);
+});
+
+// The seed data has 3 unavailable consultants; this page shows 2 of them.
+test('GET /api/consultants returns filtered total before pagination', async () => {
+  const res = await request(app)
+    .get('/api/consultants?available=false&page=1&pageSize=2')
+    .expect(200);
+
+  assert.equal(res.body.items.length, 2);
+  assert.equal(res.body.total, 3);
+});
+
+
+
+// Sorting by rate must not change the order of later requests.
+test('GET /api/consultants rate sorting does not affect later requests', async () => {
+  const sorted = await request(app)
+    .get('/api/consultants?sort=rate&page=1&pageSize=3')
+    .expect(200);
+
+  assert.deepEqual(
+    sorted.body.items.map((c) => c.id),
+    [9, 5, 7]
+  );
+
+  const subsequent = await request(app)
+    .get('/api/consultants?page=1&pageSize=3')
+    .expect(200);
+
+  assert.deepEqual(
+    subsequent.body.items.map((c) => c.id),
+    [1, 2, 3]
+  );
+});
+
+
+// Changing an ID must be rejected without modifying the consultant.
+test('PATCH /api/consultants/:id rejects id changes', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ id: 999 })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});
+
+// An unknown field must cause the whole update to be rejected.
+test('PATCH /api/consultants/:id rejects unknown fields', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ hourlyRate: 999, nickname: 'Test' })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});
+
+
+// An @ sign alone is not a valid email address.
+test('POST /api/consultants rejects an invalid email address', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Email Test',
+      email: '@',
+      skills: ['Node.js'],
+      hourlyRate: 900,
+      yearsOfExperience: 3,
+      available: true,
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
+
+
+// Negative hourly rates must be rejected.
+test('POST /api/consultants rejects a negative hourly rate', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Negative Rate',
+      email: 'negative@example.com',
+      skills: ['Node.js'],
+      hourlyRate: -1,
+      yearsOfExperience: 3,
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
+
+// Experience must be a number.
+test('POST /api/consultants rejects non-numeric years of experience', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Invalid Experience',
+      email: 'experience@example.com',
+      skills: ['Node.js'],
+      hourlyRate: 900,
+      yearsOfExperience: 'three',
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
+
+
+// PATCH must reject a negative hourly rate without modifying the consultant.
+test('PATCH /api/consultants/:id rejects a negative hourly rate', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ hourlyRate: -1 })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});
+
+// PATCH must reject non-numeric years of experience.
+test('PATCH /api/consultants/:id rejects non-numeric years of experience', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ yearsOfExperience: 'five' })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});
+
+// PATCH must keep skills as an array.
+test('PATCH /api/consultants/:id rejects non-array skills', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ skills: 'Node.js' })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});
+
+// PATCH must reject an invalid email address.
+test('PATCH /api/consultants/:id rejects an invalid email address', async () => {
+  const before = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  const res = await request(app)
+    .patch('/api/consultants/2')
+    .send({ email: '@' })
+    .expect(400);
+
+  assert.ok(res.body.error);
+
+  const after = await request(app)
+    .get('/api/consultants/2')
+    .expect(200);
+
+  assert.deepEqual(after.body, before.body);
+});
+
+test('PATCH /api/consultants/:id returns 400 for an invalid id', async () => {
+  const res = await request(app)
+    .patch('/api/consultants/abc')
+    .send({ hourlyRate: 900 })
+    .expect(400);
+
+  assert.match(res.headers['content-type'], /application\/json/);
+  assert.ok(res.body.error);
+});
+
+// available should default to true when omitted.
+test('POST /api/consultants defaults available to true', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Default Available',
+      email: 'default@example.com',
+      skills: ['Node.js'],
+      hourlyRate: 800,
+      yearsOfExperience: 2,
+    })
+    .expect(201);
+
+  assert.equal(res.body.available, true);
+});
+
+// skills must be an array when creating a consultant.
+test('POST /api/consultants rejects non-array skills', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Invalid Skills',
+      email: 'skills@example.com',
+      skills: 'Node.js',
+      hourlyRate: 800,
+      yearsOfExperience: 2,
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
+
+// hourlyRate is required.
+test('POST /api/consultants returns 400 when hourlyRate is missing', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Missing Rate',
+      email: 'rate@example.com',
+      skills: ['Node.js'],
+      yearsOfExperience: 2,
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
+
+// yearsOfExperience is required.
+test('POST /api/consultants returns 400 when yearsOfExperience is missing', async () => {
+  const res = await request(app)
+    .post('/api/consultants')
+    .send({
+      name: 'Missing Experience',
+      email: 'experience2@example.com',
+      skills: ['Node.js'],
+      hourlyRate: 800,
+    })
+    .expect(400);
+
+  assert.ok(res.body.error);
+});
+
+// PATCH should return 404 when the consultant does not exist.
+test('PATCH /api/consultants/:id returns 404 for an unknown consultant', async () => {
+  const res = await request(app)
+    .patch('/api/consultants/999')
+    .send({ hourlyRate: 900 })
+    .expect(404);
+
+  assert.ok(res.body.error);
+});

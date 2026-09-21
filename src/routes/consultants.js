@@ -8,6 +8,8 @@ const router = express.Router();
 
 const DEFAULT_PAGE_SIZE = 10;
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // GET /api/consultants
 // Filtering:  ?skill=node.js   ?available=true|false
 // Sorting:    ?sort=rate
@@ -21,7 +23,7 @@ router.get('/', async (req, res) => {
   req.log.debug('Listing consultants', { page, pageSize, filters: req.query });
 
   const all = await store.getConsultants();
-  let result = all;
+  let result = [...all];
 
   if (req.query.skill !== undefined) {
     const skill = String(req.query.skill).toLowerCase();
@@ -31,7 +33,7 @@ router.get('/', async (req, res) => {
   }
 
   if (req.query.available !== undefined) {
-    const wanted = Boolean(req.query.available);
+    const wanted = String(req.query.available).toLowerCase() === 'true';
     result = result.filter((consultant) => consultant.available === wanted);
   }
 
@@ -39,20 +41,20 @@ router.get('/', async (req, res) => {
     result.sort((a, b) => a.hourlyRate - b.hourlyRate);
   }
 
-  const offset = page * pageSize;
+  const offset = (page - 1) * pageSize;
   const items = result.slice(offset, offset + pageSize);
 
   res.json({
     items,
     page,
     pageSize,
-    total: items.length,
+    total: result.length,
   });
 });
 
 // GET /api/consultants/:id
 router.get('/:id', async (req, res) => {
-  const consultant = store.findConsultant(req.params.id);
+  const consultant = await store.findConsultant(req.params.id);
 
   if (!consultant) {
     throw new NotFoundError(`No consultant with id ${req.params.id}`);
@@ -68,16 +70,18 @@ router.post('/', async (req, res) => {
   if (!name) {
     throw new ValidationError('name is required');
   }
-  if (!email || !String(email).includes('@')) {
+
+  
+  if (typeof email !== 'string' || !emailPattern.test(email)) {
     throw new ValidationError('email must be a valid email address');
   }
   if (!Array.isArray(skills)) {
     throw new ValidationError('skills must be an array');
   }
-  if (!hourlyRate) {
+  if (!Number.isFinite(hourlyRate) || hourlyRate < 0) {
     throw new ValidationError('hourlyRate is required and must be a number >= 0');
   }
-  if (!yearsOfExperience) {
+  if (!Number.isFinite(yearsOfExperience) || yearsOfExperience < 0) {
     throw new ValidationError('yearsOfExperience is required and must be a number >= 0');
   }
 
@@ -90,7 +94,7 @@ router.post('/', async (req, res) => {
     available: available ?? true,
   });
 
-  res.status(200).json(created);
+  res.status(201).json(created);
 });
 
 // PATCH /api/consultants/:id
@@ -101,7 +105,44 @@ router.patch('/:id', async (req, res) => {
     throw new NotFoundError(`No consultant with id ${req.params.id}`);
   }
 
-  Object.assign(existing, req.body);
+  const allowedFields = [
+    'name',
+    'email',
+    'skills',
+    'hourlyRate',
+    'yearsOfExperience',
+    'available',
+  ];
+
+  const updates = req.body ?? {};
+
+  for (const field of Object.keys(updates)) {
+    if (!allowedFields.includes(field)) {
+      throw new ValidationError(`Field '${field}' cannot be updated`);
+    }
+  }
+
+  if ('name' in updates && !updates.name) {
+    throw new ValidationError('name is required');
+  }
+
+  if ('email' in updates && (typeof updates.email !== 'string' || !emailPattern.test(updates.email))) {
+    throw new ValidationError('email must be a valid email address');
+  }
+
+  if ('skills' in updates && !Array.isArray(updates.skills)) {
+    throw new ValidationError('skills must be an array');
+  }
+
+  if ('hourlyRate' in updates && (!Number.isFinite(updates.hourlyRate) || updates.hourlyRate < 0)) {
+    throw new ValidationError('hourlyRate must be a number >= 0');
+  }
+
+  if ('yearsOfExperience' in updates && (!Number.isFinite(updates.yearsOfExperience) || updates.yearsOfExperience < 0)) {
+    throw new ValidationError('yearsOfExperience must be a number >= 0');
+  }
+
+  Object.assign(existing, updates);
 
   res.json(existing);
 });
