@@ -149,6 +149,15 @@ välj det du är mest bekväm med.
 * **Fix:** I added a PATCH test for an invalid consultant ID. No production code change was needed because the existing ID validation already handled this case correctly.
 * **Test:** `PATCH /api/consultants/abc` with a valid update body now verifies that the API returns `400` with a JSON error response.
 
+
 ## Things I chose not to do
 
+- I kept the existing structure and in-memory storage to focus on the bugs.
+- I did not add a validation library because the checks were simple enough to write without another dependency.
+
+
+
 ## Questions / assumptions
+
+- I followed the README to decide what each endpoint should return.
+- I checked in Postman that deleting a consultant leaves their assignments in the system. The README does not specify whether these should stay or be deleted, so I left the behaviour unchanged.
